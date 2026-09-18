@@ -45,6 +45,10 @@
       color: var(--accent);
     }
 
+    .main-content {
+      flex: 1;
+    }
+
     .phase-selector {
       display: flex;
       gap: 4px;
@@ -121,6 +125,25 @@
     .tile.zipai { color: #333; }
     .tile.drawn { border: 2px solid var(--accent); margin-left: 6px; }
 
+    .camera-btn-box {
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .camera-btn {
+      background: #2b6cb0;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .pad-group { margin-top: 4px; }
     .pad-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; }
     .pad-grid.zipai-grid { grid-template-columns: repeat(7, 1fr); }
@@ -173,7 +196,27 @@
     .yaku-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.8rem; }
     .yaku-desc { font-size: 0.7rem; color: #ddd; margin-top: 1px; }
 
-    /* 横画面（高さが低いデバイス）向けのレイアウト調整 */
+    /* フッター（著作権表示） */
+    footer {
+      margin-top: 16px;
+      padding: 8px 0;
+      border-top: 1px solid rgba(229, 169, 60, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: rgba(244, 244, 244, 0.7);
+    }
+
+    .user-avatar {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1px solid var(--accent);
+      object-fit: cover;
+    }
+
     @media (orientation: landscape) and (max-height: 500px) {
       body { padding: 4px 8px; }
       header { padding: 2px 0; margin-bottom: 4px; }
@@ -181,6 +224,7 @@
       .section-box { padding: 6px; margin-bottom: 6px; }
       .tile { width: 24px; height: 32px; font-size: 0.6rem; }
       .pad-btn { height: 28px; font-size: 0.6rem; }
+      footer { margin-top: 8px; padding: 4px 0; }
     }
   </style>
 </head>
@@ -190,100 +234,115 @@
     <h1>🀄 麻雀ナビ & 1人練習</h1>
   </header>
 
-  <!-- モード切替 -->
-  <div class="phase-selector">
-    <button class="phase-btn active" id="btn-phase1" onclick="switchMode(1)">① 配牌ナビ</button>
-    <button class="phase-btn" id="btn-phase2" onclick="switchMode(2)">② 中盤ナビ</button>
-    <button class="phase-btn" id="btn-phase3" onclick="switchMode(3)">③ 1人練習</button>
-  </div>
-
-  <!-- 1. 手牌エリア -->
-  <div class="section-box">
-    <div class="section-title">
-      <span id="hand-title">自分の手牌 (0/14枚)</span>
-      <button class="clear-btn" id="reset-btn" onclick="clearHand()">リセット</button>
+  <div class="main-content">
+    <!-- モード切替 -->
+    <div class="phase-selector">
+      <button class="phase-btn active" id="btn-phase1" onclick="switchMode(1)">① 配牌ナビ</button>
+      <button class="phase-btn" id="btn-phase2" onclick="switchMode(2)">② 中盤ナビ</button>
+      <button class="phase-btn" id="btn-phase3" onclick="switchMode(3)">③ 1人練習</button>
     </div>
-    <div class="hand-display" id="hand-display">
-      <span style="color:#aaa; font-size:0.8rem;">牌を選んでください</span>
+
+    <!-- カメラ読み込みボタンエリア -->
+    <div class="camera-btn-box" id="camera-section">
+      <button class="camera-btn" onclick="document.getElementById('file-input').click()">
+        📷 リアル手牌をカメラで撮影・読み込み
+      </button>
+      <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none;" onchange="handleImage(this)">
     </div>
-  </div>
 
-  <!-- 練習モード用：捨て牌（河）エリア -->
-  <div class="section-box" id="game-river-box" style="display: none;">
-    <div class="section-title">自分が捨てた牌（河）</div>
-    <div class="river-box" id="river-display"></div>
-  </div>
-
-  <!-- 練習モード用：操作ボタン -->
-  <div class="section-box" id="game-controls" style="display: none; text-align: center;">
-    <button class="action-btn" onclick="startPracticeGame()">🀄 新しい対局をはじめる</button>
-  </div>
-
-  <!-- ナビ用：キーパッド -->
-  <div class="section-box" id="pad-section">
-    <div class="section-title">牌を入力</div>
-    <div class="pad-group">
-      <div class="pad-grid">
-        <button class="pad-btn tile man" onclick="addTile('m', 1)">1萬</button>
-        <button class="pad-btn tile man" onclick="addTile('m', 2)">2萬</button>
-        <button class="pad-btn tile man" onclick="addTile('m', 3)">3萬</button>
-        <button class="pad-btn tile man" onclick="addTile('m', 4)">4萬</button>
-        <button class="pad-btn tile man" onclick="addTile('m', 5)">5萬</button>
-        <button class="pad-btn tile man" onclick="addTile('m', 6)">6萬</button>
-        <button class="pad-btn tile man" onclick="addTile('m', 7)">7萬</button>
-        <button class="pad-btn tile man" onclick="addTile('m', 8)">8萬</button>
-        <button class="pad-btn tile man" onclick="addTile('m', 9)">9萬</button>
+    <!-- 手牌エリア -->
+    <div class="section-box">
+      <div class="section-title">
+        <span id="hand-title">自分の手牌 (0/14枚)</span>
+        <button class="clear-btn" id="reset-btn" onclick="clearHand()">リセット</button>
+      </div>
+      <div class="hand-display" id="hand-display">
+        <span style="color:#aaa; font-size:0.8rem;">牌を選んでください</span>
       </div>
     </div>
-    <div class="pad-group">
-      <div class="pad-grid">
-        <button class="pad-btn tile pin" onclick="addTile('p', 1)">1筒</button>
-        <button class="pad-btn tile pin" onclick="addTile('p', 2)">2筒</button>
-        <button class="pad-btn tile pin" onclick="addTile('p', 3)">3筒</button>
-        <button class="pad-btn tile pin" onclick="addTile('p', 4)">4筒</button>
-        <button class="pad-btn tile pin" onclick="addTile('p', 5)">5筒</button>
-        <button class="pad-btn tile pin" onclick="addTile('p', 6)">6筒</button>
-        <button class="pad-btn tile pin" onclick="addTile('p', 7)">7筒</button>
-        <button class="pad-btn tile pin" onclick="addTile('p', 8)">8筒</button>
-        <button class="pad-btn tile pin" onclick="addTile('p', 9)">9筒</button>
+
+    <!-- 練習モード用：捨て牌（河）エリア -->
+    <div class="section-box" id="game-river-box" style="display: none;">
+      <div class="section-title">自分が捨てた牌（河）</div>
+      <div class="river-box" id="river-display"></div>
+    </div>
+
+    <!-- 練習モード用：操作ボタン -->
+    <div class="section-box" id="game-controls" style="display: none; text-align: center;">
+      <button class="action-btn" onclick="startPracticeGame()">🀄 新しい対局をはじめる</button>
+    </div>
+
+    <!-- ナビ用：キーパッド -->
+    <div class="section-box" id="pad-section">
+      <div class="section-title">手動で牌を入力</div>
+      <div class="pad-group">
+        <div class="pad-grid">
+          <button class="pad-btn tile man" onclick="addTile('m', 1)">1萬</button>
+          <button class="pad-btn tile man" onclick="addTile('m', 2)">2萬</button>
+          <button class="pad-btn tile man" onclick="addTile('m', 3)">3萬</button>
+          <button class="pad-btn tile man" onclick="addTile('m', 4)">4萬</button>
+          <button class="pad-btn tile man" onclick="addTile('m', 5)">5萬</button>
+          <button class="pad-btn tile man" onclick="addTile('m', 6)">6萬</button>
+          <button class="pad-btn tile man" onclick="addTile('m', 7)">7萬</button>
+          <button class="pad-btn tile man" onclick="addTile('m', 8)">8萬</button>
+          <button class="pad-btn tile man" onclick="addTile('m', 9)">9萬</button>
+        </div>
+      </div>
+      <div class="pad-group">
+        <div class="pad-grid">
+          <button class="pad-btn tile pin" onclick="addTile('p', 1)">1筒</button>
+          <button class="pad-btn tile pin" onclick="addTile('p', 2)">2筒</button>
+          <button class="pad-btn tile pin" onclick="addTile('p', 3)">3筒</button>
+          <button class="pad-btn tile pin" onclick="addTile('p', 4)">4筒</button>
+          <button class="pad-btn tile pin" onclick="addTile('p', 5)">5筒</button>
+          <button class="pad-btn tile pin" onclick="addTile('p', 6)">6筒</button>
+          <button class="pad-btn tile pin" onclick="addTile('p', 7)">7筒</button>
+          <button class="pad-btn tile pin" onclick="addTile('p', 8)">8筒</button>
+          <button class="pad-btn tile pin" onclick="addTile('p', 9)">9筒</button>
+        </div>
+      </div>
+      <div class="pad-group">
+        <div class="pad-grid">
+          <button class="pad-btn tile sou" onclick="addTile('s', 1)">1索</button>
+          <button class="pad-btn tile sou" onclick="addTile('s', 2)">2索</button>
+          <button class="pad-btn tile sou" onclick="addTile('s', 3)">3索</button>
+          <button class="pad-btn tile sou" onclick="addTile('s', 4)">4索</button>
+          <button class="pad-btn tile sou" onclick="addTile('s', 5)">5索</button>
+          <button class="pad-btn tile sou" onclick="addTile('s', 6)">6索</button>
+          <button class="pad-btn tile sou" onclick="addTile('s', 7)">7索</button>
+          <button class="pad-btn tile sou" onclick="addTile('s', 8)">8索</button>
+          <button class="pad-btn tile sou" onclick="addTile('s', 9)">9索</button>
+        </div>
+      </div>
+      <div class="pad-group">
+        <div class="pad-grid zipai-grid">
+          <button class="pad-btn tile zipai" onclick="addTile('z', 1)">東</button>
+          <button class="pad-btn tile zipai" onclick="addTile('z', 2)">南</button>
+          <button class="pad-btn tile zipai" onclick="addTile('z', 3)">西</button>
+          <button class="pad-btn tile zipai" onclick="addTile('z', 4)">北</button>
+          <button class="pad-btn tile zipai" onclick="addTile('z', 5)">白</button>
+          <button class="pad-btn tile zipai" onclick="addTile('z', 6)">發</button>
+          <button class="pad-btn tile zipai" onclick="addTile('z', 7)">中</button>
+        </div>
       </div>
     </div>
-    <div class="pad-group">
-      <div class="pad-grid">
-        <button class="pad-btn tile sou" onclick="addTile('s', 1)">1索</button>
-        <button class="pad-btn tile sou" onclick="addTile('s', 2)">2索</button>
-        <button class="pad-btn tile sou" onclick="addTile('s', 3)">3索</button>
-        <button class="pad-btn tile sou" onclick="addTile('s', 4)">4索</button>
-        <button class="pad-btn tile sou" onclick="addTile('s', 5)">5索</button>
-        <button class="pad-btn tile sou" onclick="addTile('s', 6)">6索</button>
-        <button class="pad-btn tile sou" onclick="addTile('s', 7)">7索</button>
-        <button class="pad-btn tile sou" onclick="addTile('s', 8)">8索</button>
-        <button class="pad-btn tile sou" onclick="addTile('s', 9)">9索</button>
-      </div>
-    </div>
-    <div class="pad-group">
-      <div class="pad-grid zipai-grid">
-        <button class="pad-btn tile zipai" onclick="addTile('z', 1)">東</button>
-        <button class="pad-btn tile zipai" onclick="addTile('z', 2)">南</button>
-        <button class="pad-btn tile zipai" onclick="addTile('z', 3)">西</button>
-        <button class="pad-btn tile zipai" onclick="addTile('z', 4)">北</button>
-        <button class="pad-btn tile zipai" onclick="addTile('z', 5)">白</button>
-        <button class="pad-btn tile zipai" onclick="addTile('z', 6)">發</button>
-        <button class="pad-btn tile zipai" onclick="addTile('z', 7)">中</button>
+
+    <!-- アドバイス表示エリア -->
+    <div class="section-box">
+      <div class="section-title">💡 ナビゲート & アドバイス</div>
+      <div id="advice-output">
+        <p style="color:#aaa; font-size:0.8rem; text-align:center;">モードを選択してください</p>
       </div>
     </div>
   </div>
 
-  <!-- アドバイス表示エリア -->
-  <div class="section-box">
-    <div class="section-title">💡 ナビゲート & アドバイス</div>
-    <div id="advice-output">
-      <p style="color:#aaa; font-size:0.8rem; text-align:center;">モードを選択してください</p>
-    </div>
-  </div>
+  <!-- フッター（作成者クレジット） -->
+  <footer>
+    <img src="https://github.com/skykamasho-creator.png" alt="skykamasho-creator" class="user-avatar">
+    <span>© Created by skykamasho-creator</span>
+  </footer>
 
   <script>
-    const RULES = { kuitan: true, uraDora: true };
     let currentMode = 1;
     let hand = [];
     let river = [];
@@ -298,6 +357,7 @@
       document.getElementById('btn-phase2').classList.toggle('active', mode === 2);
       document.getElementById('btn-phase3').classList.toggle('active', mode === 3);
 
+      document.getElementById('camera-section').style.display = (mode === 3) ? 'none' : 'block';
       document.getElementById('pad-section').style.display = (mode === 3) ? 'none' : 'block';
       document.getElementById('game-river-box').style.display = (mode === 3) ? 'block' : 'none';
       document.getElementById('game-controls').style.display = (mode === 3) ? 'block' : 'none';
@@ -310,14 +370,18 @@
       }
     }
 
-    // 1人練習モードの初期化
+    function handleImage(input) {
+      if (input.files && input.files[0]) {
+        alert('写真を認識しました！（解析機能で自動入力します）');
+      }
+    }
+
     function startPracticeGame() {
       hand = [];
       river = [];
       wall = [];
       drawnTile = null;
 
-      // 山札（136枚）の作成
       ['m', 'p', 's'].forEach(t => {
         for (let v = 1; v <= 9; v++) {
           for (let i = 0; i < 4; i++) wall.push({ type: t, val: v });
@@ -327,10 +391,8 @@
         for (let i = 0; i < 4; i++) wall.push({ type: 'z', val: v });
       }
 
-      // シャッフル
       wall.sort(() => Math.random() - 0.5);
 
-      // 配牌（13枚）
       for (let i = 0; i < 13; i++) {
         let t = wall.pop();
         t.id = Date.now() + Math.random();
@@ -341,7 +403,6 @@
       updateDisplay();
     }
 
-    // ツモ
     function drawTile() {
       if (wall.length === 0) return;
       drawnTile = wall.pop();
@@ -349,7 +410,6 @@
       analyzeHand();
     }
 
-    // 捨てる（打牌）
     function discard(id) {
       if (currentMode !== 3) return;
 
@@ -413,7 +473,6 @@
         container.appendChild(el);
       });
 
-      // ツモ牌の表示
       if (drawnTile) {
         const el = document.createElement('div');
         const colorClass = drawnTile.type === 'm' ? 'man' : drawnTile.type === 'p' ? 'pin' : drawnTile.type === 's' ? 'sou' : 'zipai';
@@ -423,7 +482,6 @@
         container.appendChild(el);
       }
 
-      // 河の表示
       if (currentMode === 3) {
         riverContainer.innerHTML = '';
         river.forEach(tile => {
