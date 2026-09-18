@@ -144,7 +144,8 @@
       gap: 6px;
     }
 
-    .pad-group { margin-top: 4px; }
+    .pad-group { margin-top: 6px; }
+    .pad-label { font-size: 0.7rem; color: #ddd; margin-bottom: 2px; }
     .pad-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; }
     .pad-grid.zipai-grid { grid-template-columns: repeat(7, 1fr); }
 
@@ -196,7 +197,18 @@
     .yaku-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.8rem; }
     .yaku-desc { font-size: 0.7rem; color: #ddd; margin-top: 1px; }
 
-    /* フッター（著作権表示） */
+    .guide-text {
+      font-size: 0.75rem;
+      line-height: 1.4;
+      color: #eaeaea;
+    }
+
+    .guide-step {
+      margin-top: 4px;
+      padding-left: 8px;
+      border-left: 2px solid var(--accent);
+    }
+
     footer {
       margin-top: 16px;
       padding: 8px 0;
@@ -210,8 +222,8 @@
     }
 
     .user-avatar {
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       border: 1px solid var(--accent);
       object-fit: cover;
@@ -276,6 +288,7 @@
     <div class="section-box" id="pad-section">
       <div class="section-title">手動で牌を入力</div>
       <div class="pad-group">
+        <div class="pad-label">萬子 (マンズ)</div>
         <div class="pad-grid">
           <button class="pad-btn tile man" onclick="addTile('m', 1)">1萬</button>
           <button class="pad-btn tile man" onclick="addTile('m', 2)">2萬</button>
@@ -289,6 +302,7 @@
         </div>
       </div>
       <div class="pad-group">
+        <div class="pad-label">筒子 (ピンズ)</div>
         <div class="pad-grid">
           <button class="pad-btn tile pin" onclick="addTile('p', 1)">1筒</button>
           <button class="pad-btn tile pin" onclick="addTile('p', 2)">2筒</button>
@@ -302,6 +316,7 @@
         </div>
       </div>
       <div class="pad-group">
+        <div class="pad-label">索子 (ソウズ)</div>
         <div class="pad-grid">
           <button class="pad-btn tile sou" onclick="addTile('s', 1)">1索</button>
           <button class="pad-btn tile sou" onclick="addTile('s', 2)">2索</button>
@@ -315,6 +330,7 @@
         </div>
       </div>
       <div class="pad-group">
+        <div class="pad-label">字牌 (ジハイ)</div>
         <div class="pad-grid zipai-grid">
           <button class="pad-btn tile zipai" onclick="addTile('z', 1)">東</button>
           <button class="pad-btn tile zipai" onclick="addTile('z', 2)">南</button>
@@ -332,6 +348,23 @@
       <div class="section-title">💡 ナビゲート & アドバイス</div>
       <div id="advice-output">
         <p style="color:#aaa; font-size:0.8rem; text-align:center;">モードを選択してください</p>
+      </div>
+    </div>
+
+    <!-- 1人練習モード用：超初心者向けガイド -->
+    <div class="section-box" id="beginner-guide" style="display: none;">
+      <div class="section-title">🔰 超初心者ガイド：麻雀で今すること</div>
+      <div class="guide-text">
+        <p><strong>【ゲームの基本目標】</strong><br>14枚の手牌で「3枚セット×4組」＋「同じ牌2枚（アタマ）」を作るゲームです！</p>
+        <div class="guide-step">
+          <strong>① ツモ（自動）：</strong>山から1枚牌を引いた状態です（一番右の枠付きの牌）。
+        </div>
+        <div class="guide-step">
+          <strong>② 捨てる（操作）：</strong>手牌の中から「使わなさそうな牌」を1枚タップして捨てましょう。
+        </div>
+        <div class="guide-step">
+          <strong>③ 繰り返す：</strong>牌を捨てると、自動で次の牌が引かれます。上のアドバイスを参考に役を作ってみましょう！
+        </div>
       </div>
     </div>
   </div>
@@ -361,6 +394,7 @@
       document.getElementById('pad-section').style.display = (mode === 3) ? 'none' : 'block';
       document.getElementById('game-river-box').style.display = (mode === 3) ? 'block' : 'none';
       document.getElementById('game-controls').style.display = (mode === 3) ? 'block' : 'none';
+      document.getElementById('beginner-guide').style.display = (mode === 3) ? 'block' : 'none';
       document.getElementById('reset-btn').style.display = (mode === 3) ? 'none' : 'inline-block';
 
       if (mode === 3) {
