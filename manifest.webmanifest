@@ -1,0 +1,17 @@
+{
+  "name": "ぎょふ海苔の麻雀ナビ",
+  "short_name": "ぎょふナビ",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#10251c",
+  "theme_color": "#10251c",
+  "description": "初心者向けの麻雀ナビ。手牌を入力して、今の一手と理由を一緒に考える。",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='64' fill='%2310251c'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='56' font-family='sans-serif'%3E🀄%3C/text%3E%3C/svg%3E",
+      "sizes": "128x128",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

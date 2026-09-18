@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#10251c" />
+  <title>ぎょふ海苔の麻雀ナビ</title>
+  <style>
+    :root {
+      --bg: #10251c;
+      --surface: #193b2b;
+      --surface-strong: #234b3a;
+      --primary: #e5a93c;
+      --secondary: #8ed8c0;
+      --accent: #f2a7b1;
+      --text: #f7f5ef;
+      --muted: #d9d0b8;
+      --tile-bg: #fff8eb;
+      --tile-border: #c8b28b;
+      --danger: #e77777;
+      --shadow: rgba(0, 0, 0, 0.2);
+      --radius: 18px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      overscroll-behavior: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      width: 100%;
+      min-height: 100vh;
+      padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+      display: flex;
+      justify-content: center;
+    }
+
+    button, input {
+      font: inherit;
+    }
+
+    button:focus-visible, input:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .app {
+      width: min(460px, 100%);
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 0 12px;
+      border-bottom: 2px solid var(--primary);
+      margin-bottom: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      border: 3px solid var(--primary);
+      background: linear-gradient(180deg, #d9d0b8 0%, #7a7f49 25%, #193b2b 75%);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-weight: 800;
+      font-size: clamp(0.95rem, 3vw, 1.15rem);
+      line-height: 1.2;
+      color: var(--primary);
+      letter-spacing: 0.02em;
+    }
+
+    .brand-name small {
+      display: block;
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .mode-chip {
+      white-space: nowrap;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-size: 0.72rem;
+      padding: 6px 10px;
+    }
+
+    .phase-selector {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .phase-btn {
+      border: 1px solid var(--primary);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 700;
+      min-height: 60px;
+      padding: 8px 6px;
+      cursor: pointer;
+      opacity: 0.7;
+      line-height: 1.3;
+      transition: transform 0.12s ease;
+    }
+
+    .phase-btn.active {
+      opacity: 1;
+      background: var(--primary);
+      color: #1a1a1a;
+    }
+
+    .phase-btn:active { transform: scale(0.97); }
+
+    .section-box {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 18px var(--shadow);
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1.35;
+    }
+
+    .section-title span {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .clear-btn {
+      background: var(--danger);
+      border: 0;
+      border-radius: 8px;
+      color: white;
+      padding: 5px 10px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .hand-display {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      min-height: 58px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      padding: 8px;
+      align-items: center;
+    }
+
+    .empty-text {
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+
+    .tile {
+      border: 1px solid var(--tile-border);
+      border-radius: 5px;
+      background: var(--tile-bg);
+      color: #111;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: 800;
+      line-height: 1.1;
+      text-align: center;
+      user-select: none;
+    }
+
+    .tile.hand-tile {
+      width: clamp(28px, 7vw, 38px);
+      height: clamp(38px, 10vw, 50px);
+      font-size: clamp(0.62rem, 2vw, 0.78rem);
+      cursor: pointer;
+    }
+
+    .tile.man { color: #b82828; }
+    .tile.pin { color: #1e5ba8; }
+    .tile.sou { color: #1e7a34; }
+    .tile.zipai { color: #333; }
+
+    .pad-section {
+      margin-top: 8px;
+    }
+
+    .pad-label {
+      color: var(--muted);
+      font-size: 0.74rem;
+      margin-bottom: 4px;
+    }
+
+    .pad-grid {
+      display: grid;
+      grid-template-columns: repeat(9, minmax(0, 1fr));
+      gap: 3px;
+    }
+
+    .pad-grid.zipai-grid {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    .pad-btn {
+      min-height: 38px;
+      border: 1px solid var(--tile-border);
+      border-radius: 6px;
+      background: var(--tile-bg);
+      color: #111;
+      font-weight: 800;
+      font-size: clamp(0.58rem, 2vw, 0.78rem);
+      padding: 2px 2px;
+      cursor: pointer;
+    }
+
+    .pad-btn:active { transform: scale(0.96); }
+
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .option-btn {
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.2);
+      color: #d7d7d7;
+      border-radius: 10px;
+      min-height: 44px;
+      padding: 8px 6px;
+      font-size: 0.76rem;
+      cursor: pointer;
+      line-height: 1.3;
+    }
+
+    .option-btn.selected {
+      border-color: var(--primary);
+      background: rgba(229, 169, 60, 0.15);
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .status-message {
+      min-height: 1.3em;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .status-message.error {
+      color: #ffb8b1;
+    }
+
+    .coach-box {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 10px 12px;
+      margin-top: 8px;
+    }
+
+    .coach-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .coach-face {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #e8dcc2, #d9b98d);
+      border: 2px solid var(--primary);
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .coach-message {
+      flex: 1;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      color: var(--text);
+    }
+
+    .advice-output {
+      min-height: 80px;
+    }
+
+    .placeholder {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--muted);
+      padding: 10px;
+      line-height: 1.5;
+    }
+
+    .advice-card {
+      background: #fdfaf3;
+      border-radius: 12px;
+      color: #222;
+      padding: 12px;
+    }
+
+    .warning-box {
+      background: rgba(229,169,60,0.12);
+      border-radius: 8px;
+      padding: 8px;
+      margin-bottom: 10px;
+      font-size: 0.76rem;
+      line-height: 1.45;
+      color: #7c5a15;
+    }
+
+    .yaku-item {
+      padding: 8px 0;
+      border-bottom: 1px dashed #d0d0d0;
+    }
+
+    .yaku-item:last-child {
+      border-bottom: none;
+    }
+
+    .yaku-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      line-height: 1.35;
+    }
+
+    .yaku-name {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .yaku-score {
+      color: #b82828;
+      white-space: nowrap;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .yaku-meta {
+      margin-top: 2px;
+      font-size: 0.76rem;
+      color: #666;
+    }
+
+    .yaku-desc {
+      margin-top: 4px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      color: #333;
+    }
+
+    .helper-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .mini-btn {
+      background: var(--secondary);
+      color: #17322a;
+      border: 0;
+      border-radius: 10px;
+      min-height: 42px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .mini-btn.soft {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+    }
+
+    .raw-input {
+      display: none;
+    }
+
+    @media (min-width: 640px) and (orientation: landscape) {
+      .app {
+        width: min(820px, 100%);
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .advice-panel {
+        grid-column: 1 / -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-avatar">🀄</div>
+        <div class="brand-name">ぎょふ海苔<small>麻雀ナビ</small></div>
+      </div>
+      <div class="mode-chip">友達モード</div>
+    </header>
+
+    <div class="phase-selector">
+      <button class="phase-btn active" id="btn-phase1" type="button">① 配牌チェック<br><small>序盤アドバイス</small></button>
+      <button class="phase-btn" id="btn-phase2" type="button">② 中盤ナビ<br><small>河が溜まった時</small></button>
+    </div>
+
+    <div class="content-grid">
+      <section class="section-box">
+        <div class="section-title">
+          <span>自分の手牌（<span id="hand-count">0</span>/14枚）</span>
+          <button class="clear-btn" id="clear-hand" type="button">リセット</button>
+        </div>
+
+        <div class="hand-display" id="hand-display" aria-live="polite">
+          <span class="empty-text">下のキーで手牌をタップしてください</span>
+        </div>
+
+        <div class="status-message" id="status-message" role="status" aria-live="polite"></div>
+
+        <div class="coach-box">
+          <div class="coach-row">
+            <div class="coach-face">😊</div>
+            <div class="coach-message" id="coach-message">手牌を選んでね。迷っても大丈夫。</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-box" id="phase2-options" hidden>
+        <div class="section-title">
+          <span>場の状況・捨て牌の偏り</span>
+        </div>
+
+        <div class="pad-label" style="color: var(--muted); font-size: 0.74rem;">みんなが多く捨てている種類：</div>
+
+        <div class="option-grid">
+          <button class="option-btn" data-option="discard-man" type="button">萬子が多く出ている</button>
+          <button class="option-btn" data-option="discard-pin" type="button">筒子が多く出ている</button>
+          <button class="option-btn" data-option="discard-sou" type="button">索子が多く出ている</button>
+          <button class="option-btn" data-option="discard-zipai" type="button">字牌が多く出ている</button>
+        </div>
+      </section>
+
+      <section class="section-box">
+        <div class="section-title">
+          <span>牌を選ぶ</span>
+        </div>
+
+        <div class="pad-section">
+          <div class="pad-label">萬子（マンズ）</div>
+          <div class="pad-grid">
+            <button class="pad-btn tile man" data-type="m" data-value="1" type="button">1萬</button>
+            <button class="pad-btn tile man" data-type="m" data-value="2" type="button">2萬</button>
+            <button class="pad-btn tile man" data-type="m" data-value="3" type="button">3萬</button>
+            <button class="pad-btn tile man" data-type="m" data-value="4" type="button">4萬</button>
+            <button class="pad-btn tile man" data-type="m" data-value="5" type="button">5萬</button>
+            <button class="pad-btn tile man" data-type="m" data-value="6" type="button">6萬</button>
+            <button class="pad-btn tile man" data-type="m" data-value="7" type="button">7萬</button>
+            <button class="pad-btn tile man" data-type="m" data-value="8" type="button">8萬</button>
+            <button class="pad-btn tile man" data-type="m" data-value="9" type="button">9萬</button>
+          </div>
+        </div>
+
+        <div class="pad-section">
+          <div class="pad-label">筒子（ピンズ）</div>
+          <div class="pad-grid">
+            <button class="pad-btn tile pin" data-type="p" data-value="1" type="button">1筒</button>
+            <button class="pad-btn tile pin" data-type="p" data-value="2" type="button">2筒</button>
+            <button class="pad-btn tile pin" data-type="p" data-value="3" type="button">3筒</button>
+            <button class="pad-btn tile pin" data-type="p" data-value="4" type="button">4筒</button>
+            <button class="pad-btn tile pin" data-type="p" data-value="5" type="button">5筒</button>
+            <button class="pad-btn tile pin" data-type="p" data-value="6" type="button">6筒</button>
+            <button class="pad-btn tile pin" data-type="p" data-value="7" type="button">7筒</button>
+            <button class="pad-btn tile pin" data-type="p" data-value="8" type="button">8筒</button>
+            <button class="pad-btn tile pin" data-type="p" data-value="9" type="button">9筒</button>
+          </div>
+        </div>
+
+        <div class="pad-section">
+          <div class="pad-label">索子（ソウズ）</div>
+          <div class="pad-grid">
+            <button class="pad-btn tile sou" data-type="s" data-value="1" type="button">1索</button>
+            <button class="pad-btn tile sou" data-type="s" data-value="2" type="button">2索</button>
+            <button class="pad-btn tile sou" data-type="s" data-value="3" type="button">3索</button>
+            <button class="pad-btn tile sou" data-type="s" data-value="4" type="button">4索</button>
+            <button class="pad-btn tile sou" data-type="s" data-value="5" type="button">5索</button>
+            <button class="pad-btn tile sou" data-type="s" data-value="6" type="button">6索</button>
+            <button class="pad-btn tile sou" data-type="s" data-value="7" type="button">7索</button>
+            <button class="pad-btn tile sou" data-type="s" data-value="8" type="button">8索</button>
+            <button class="pad-btn tile sou" data-type="s" data-value="9" type="button">9索</button>
+          </div>
+        </div>
+
+        <div class="pad-section">
+          <div class="pad-label">字牌（ジハイ）</div>
+          <div class="pad-grid zipai-grid">
+            <button class="pad-btn tile zipai" data-type="z" data-value="1" type="button">東</button>
+            <button class="pad-btn tile zipai" data-type="z" data-value="2" type="button">南</button>
+            <button class="pad-btn tile zipai" data-type="z" data-value="3" type="button">西</button>
+            <button class="pad-btn tile zipai" data-type="z" data-value="4" type="button">北</button>
+            <button class="pad-btn tile zipai" data-type="z" data-value="5" type="button">白</button>
+            <button class="pad-btn tile zipai" data-type="z" data-value="6" type="button">發</button>
+            <button class="pad-btn tile zipai" data-type="z" data-value="7" type="button">中</button>
+          </div>
+        </div>
+
+        <div class="helper-row">
+          <button class="mini-btn" id="camera-button" type="button">📷 カメラ補助</button>
+          <button class="mini-btn soft" id="manual-button" type="button">手動入力</button>
+        </div>
+
+        <input id="camera-input" class="raw-input" type="file" accept="image/*" capture="environment" />
+      </section>
+
+      <section class="section-box advice-panel">
+        <div class="section-title">
+          <span>💡 狙い目の役 &amp; アドバイス</span>
+        </div>
+
+        <div class="advice-output" id="advice-output">
+          <p class="placeholder">手牌を5枚以上選ぶと<br>自動でアドバイスが出ます。</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const MAX_HAND_SIZE = 14;
+    const MIN_ANALYZE_SIZE = 5;
+    const RULES = { kuitan: true, kiriageMangan: true, uraDora: true };
+
+    let currentPhase = 1;
+    let hand = [];
+    let selectedOptions = new Set();
+
+    const TILE_NAMES = {
+      m: '萬',
+      p: '筒',
+      s: '索',
+      z: ['', '東', '南', '西', '北', '白', '發', '中']
+    };
+
+    const coachMessageEl = document.getElementById('coach-message');
+    const statusMessageEl = document.getElementById('status-message');
+    const handDisplayEl = document.getElementById('hand-display');
+    const handCountEl = document.getElementById('hand-count');
+    const outputEl = document.getElementById('advice-output');
+
+    function setStatus(message, isError = false) {
+      statusMessageEl.textContent = message;
+      statusMessageEl.classList.toggle('error', isError);
+    }
+
+    function setCoach(text) {
+      coachMessageEl.textContent = text;
+    }
+
+    function getTileKey(type, value) {
+      return `${type}_${value}`;
+    }
+
+    function getTileLabel(tile) {
+      if (tile.type === 'z') return TILE_NAMES.z[tile.value];
+      return `${tile.value}${TILE_NAMES[tile.type]}`;
+    }
+
+    function getTileClass(type) {
+      const map = { m: 'man', p: 'pin', s: 'sou', z: 'zipai' };
+      return map[type] || '';
+    }
+
+    function createTileId() {
+      return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    }
+
+    function getSameTileCount(type, value) {
+      return hand.filter(tile => tile.type === type && tile.value === value).length;
+    }
+
+    function addTile(type, value) {
+      if (hand.length >= MAX_HAND_SIZE) {
+        setStatus('手牌は14枚までです。', true);
+        setCoach('ここは14枚までだよ。あとで直せるよ。');
+        return;
+      }
+
+      if (getSameTileCount(type, value) >= 4) {
+        setStatus('同じ牌は4枚までです。', true);
+        setCoach('同じ牌は4枚まで。次の一手を考えよう。');
+        return;
+      }
+
+      hand.push({ type, value, id: createTileId() });
+      setStatus('');
+      renderHand();
+      analyzeHand();
+      setCoach('いい感じ。今の形を見てみよう。');
+    }
+
+    function removeTile(id) {
+      hand = hand.filter(tile => tile.id !== id);
+      setStatus('');
+      renderHand();
+      analyzeHand();
+
+      if (hand.length >= 5) {
+        setCoach('この牌を外したね。形を整理していこう。');
+      } else {
+        setCoach('手牌が少し見えやすくなったね。');
+      }
+    }
+
+    function clearHand() {
+      hand = [];
+      setStatus('');
+      renderHand();
+      analyzeHand();
+      setCoach('手牌をリセットしたよ。まずは5枚以上で見てみよう。');
+    }
+
+    function renderHand() {
+      handCountEl.textContent = hand.length;
+
+      if (hand.length === 0) {
+        handDisplayEl.innerHTML = '<span class="empty-text">下のキーで手牌をタップしてください</span>';
+        return;
+      }
+
+      hand.sort((a, b) => {
+        const order = { m: 1, p: 2, s: 3, z: 4 };
+        if (order[a.type] !== order[b.type]) return order[a.type] - order[b.type];
+        return a.value - b.value;
+      });
+
+      handDisplayEl.innerHTML = '';
+      hand.forEach(tile => {
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = `tile hand-tile ${getTileClass(tile.type)}`;
+        el.textContent = getTileLabel(tile);
+        el.setAttribute('aria-label', `${getTileLabel(tile)}を削除`);
+        el.addEventListener('click', () => removeTile(tile.id));
+        handDisplayEl.appendChild(el);
+      });
+    }
+
+    function switchPhase(phase) {
+      currentPhase = phase;
+      document.getElementById('btn-phase1').classList.toggle('active', phase === 1);
+      document.getElementById('btn-phase2').classList.toggle('active', phase === 2);
+      document.getElementById('phase2-options').hidden = phase !== 2;
+      analyzeHand();
+    }
+
+    function toggleOption(button) {
+      const optionKey = button.dataset.option;
+      if (!optionKey) return;
+
+      if (selectedOptions.has(optionKey)) {
+        selectedOptions.delete(optionKey);
+      } else {
+        selectedOptions.add(optionKey);
+      }
+
+      button.classList.toggle('selected', selectedOptions.has(optionKey));
+      button.setAttribute('aria-pressed', String(selectedOptions.has(optionKey)));
+      analyzeHand();
+    }
+
+    function getHandStats() {
+      const counts = { m: 0, p: 0, s: 0, z: 0 };
+      const tileCounts = new Map();
+      let terminalOrHonor = 0;
+
+      hand.forEach(tile => {
+        counts[tile.type] += 1;
+        if (tile.type === 'z' || tile.value === 1 || tile.value === 9) terminalOrHonor += 1;
+
+        const key = getTileKey(tile.type, tile.value);
+        tileCounts.set(key, (tileCounts.get(key) || 0) + 1);
+      });
+
+      const pairCount = [...tileCounts.values()].filter(count => count >= 2).length;
+      const allSimple = hand.length > 0 && hand.every(tile => tile.type !== 'z' && tile.value >= 2 && tile.value <= 8);
+
+      const honorTriplets = [...tileCounts.entries()].filter(([key, count]) => key.startsWith('z_') && count >= 3);
+      const honorPairs = [...tileCounts.entries()].filter(([key, count]) => key.startsWith('z_') && count === 2);
+
+      return { counts, tileCounts, pairCount, allSimple, honorTriplets, honorPairs, terminalOrHonor };
+    }
+
+    function createSuggestion(name, score, easy, desc) {
+      return { name, score, easy, desc };
+    }
+
+    function getSuggestions() {
+      const { counts, pairCount, allSimple, honorTriplets, honorPairs } = getHandStats();
+      const suggestions = [];
+      const suitNames = { m: '萬子', p: '筒子', s: '索子' };
+
+      Object.keys(suitNames).forEach(type => {
+        const otherSuit = counts.m + counts.p + counts.s - counts[type];
+        const candidateCount = counts[type] + counts.z;
+
+        if (counts[type] >= 3 && otherSuit <= 2 && candidateCount >= Math.min(hand.length, 8)) {
+          suggestions.push(createSuggestion(
+            `混一色候補（${suitNames[type]}）`,
+            '門前3翻／鳴き2翻',
+            '★★★☆☆',
+            `${suitNames[type]}と字牌を中心にした形です。少し整理すると狙いやすくなります。`
+          ));
+        }
+      });
+
+      if (allSimple) {
+        suggestions.push(createSuggestion(
+          'タンヤオ候補（断幺九）',
+          '1翻',
+          '★★★★★',
+          `2〜8の数牌だけで作れそうです。${RULES.kuitan ? '鳴いても成立しやすいです。' : '門前で狙うのが安心です。'}`
+        ));
+      }
+
+      if (honorTriplets.length > 0) {
+        suggestions.push(createSuggestion(
+          '役牌候補',
+          '1翻×成立種類',
+          '★★★★☆',
+          '同じ字牌が3枚以上あります。和了時に役牌になる可能性があります。'
+        ));
+      } else if (honorPairs.length > 0) {
+        suggestions.push(createSuggestion(
+          '役牌候補',
+          '1翻',
+          '★★★★☆',
+          '同じ字牌が2枚あります。もう1枚引くと役牌を狙えます。'
+        ));
+      }
+
+      if (pairCount >= 3) {
+        suggestions.push(createSuggestion(
+          '七対子候補（チートイツ）',
+          '2翻',
+          '★★★☆☆',
+          `対子が${pairCount}種類あります。7組に近づいています。`
+        ));
+      }
+
+      suggestions.push(createSuggestion(
+        '立直を目指す',
+        '1翻〜',
+        '★★★★★',
+        '門前でテンパイなら目指せます。今は待ちや受け入れを見ていこう。'
+      ));
+
+      return suggestions.slice(0, 3);
+    }
+
+    function renderAdviceCard(suggestions) {
+      const card = document.createElement('div');
+      card.className = 'advice-card';
+
+      if (currentPhase === 2 && selectedOptions.size > 0) {
+        const warning = document.createElement('div');
+        warning.className = 'warning-box';
+        warning.textContent = '⚠️ 場の捨て牌状況を考慮中。裏目になりやすい牌種は少し気にしてね。';
+        card.appendChild(warning);
+      }
+
+      suggestions.forEach(item => {
+        const yaku = document.createElement('div');
+        yaku.className = 'yaku-item';
+
+        const header = document.createElement('div');
+        header.className = 'yaku-header';
+
+        const name = document.createElement('span');
+        name.className = 'yaku-name';
+        name.textContent = item.name;
+
+        const score = document.createElement('span');
+        score.className = 'yaku-score';
+        score.textContent = item.score;
+
+        header.append(name, score);
+
+        const meta = document.createElement('div');
+        meta.className = 'yaku-meta';
+        meta.textContent = `狙いやすさ: ${item.easy}`;
+
+        const desc = document.createElement('div');
+        desc.className = 'yaku-desc';
+        desc.textContent = item.desc;
+
+        yaku.append(header, meta, desc);
+        card.appendChild(yaku);
+      });
+
+      outputEl.innerHTML = '';
+      outputEl.appendChild(card);
+    }
+
+    function analyzeHand() {
+      if (hand.length < MIN_ANALYZE_SIZE) {
+        outputEl.innerHTML = '<p class="placeholder">手牌を5枚以上選ぶと<br>自動でアドバイスが出ます。</p>';
+        return;
+      }
+
+      const suggestions = getSuggestions();
+      renderAdviceCard(suggestions);
+
+      if (currentPhase === 1) {
+        setCoach('今の形はいい感じ。安定を優先しよう。');
+      } else {
+        setCoach('場況を見て、少し方向転換も考えよう。');
+      }
+    }
+
+    function attachTileButtons() {
+      document.querySelectorAll('.pad-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          addTile(button.dataset.type, Number(button.dataset.value));
+        });
+      });
+    }
+
+    function attachOptionButtons() {
+      document.querySelectorAll('.option-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          toggleOption(button);
+        });
+      });
+    }
+
+    document.getElementById('btn-phase1').addEventListener('click', () => switchPhase(1));
+    document.getElementById('btn-phase2').addEventListener('click', () => switchPhase(2));
+    document.getElementById('clear-hand').addEventListener('click', clearHand);
+
+    document.getElementById('camera-button').addEventListener('click', () => {
+      const input = document.getElementById('camera-input');
+      input.click();
+    });
+
+    document.getElementById('manual-button').addEventListener('click', () => {
+      setStatus('手動入力モードです。牌をタップしてね。');
+      setCoach('手動入力でも大丈夫。迷ったら候補から選べるよ。');
+    });
+
+    document.getElementById('camera-input').addEventListener('change', (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      setStatus('写真を確認中です。近い牌を選んでね。');
+      setCoach('写真を見ているよ。候補を選んで進もう。');
+
+      const previewUrl = URL.createObjectURL(file);
+      const img = document.createElement('img');
+      img.src = previewUrl;
+      img.alt = '撮影した牌';
+      img.style.width = '100%';
+      img.style.marginTop = '10px';
+      img.style.borderRadius = '10px';
+      img.style.display = 'block';
+      outputEl.innerHTML = '';
+      outputEl.appendChild(img);
+
+      const note = document.createElement('p');
+      note.className = 'placeholder';
+      note.textContent = 'まだ補助機能です。近い牌をタップして、手牌に追加してね。';
+      outputEl.appendChild(note);
+
+      setTimeout(() => URL.revokeObjectURL(previewUrl), 3000);
+      event.target.value = '';
+    });
+
+    attachTileButtons();
+    attachOptionButtons();
+    renderHand();
+    analyzeHand();
+    setCoach('手牌を選んでね。迷っても大丈夫。');
+  </script>
+</body>
+</html>
